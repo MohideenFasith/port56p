@@ -1,0 +1,45 @@
+name: test
+
+on: [push, pull_request]
+
+permissions:
+    contents: read
+    pull-requests: read
+    issues: write
+    checks: write
+
+jobs:
+    automated-tests:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v2
+
+            - name: Set up Python
+              uses: actions/setup-python@v2
+              with:
+                  python-version: "3.x"
+                  architecture: "x64"
+
+            - name: Install dependencies and run tests
+              run: make install
+              continue-on-error: true
+
+            - name: Run tests
+              run: make test
+              continue-on-error: true
+
+            - name: Report unit test results
+              uses: mikepenz/action-junit-report@v2
+              if: success() || failure()
+              with:
+                  report_paths: "**/lru.xml"
+                  check_name: "LRU Tests Report"
+
+            - name: Report intergation test results
+              uses: mikepenz/action-junit-report@v2
+              if: success() || failure()
+              with:
+                  report_paths: "**/ssml.xml"
+                  check_name: "SSML Tests Report"
